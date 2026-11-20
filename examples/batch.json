@@ -1,0 +1,10 @@
+{
+  "series": "amber-trial", "revision": "bench-01",
+  "materials": [
+    {"id": "remelt", "kind": "melt", "grams": 41, "loss_g": 4, "inputs": [{"from": "first-melt", "grams": 45}]},
+    {"id": "clear-cut", "kind": "feed", "grams": 90},
+    {"id": "first-melt", "kind": "melt", "grams": 90, "loss_g": 10, "inputs": [{"from": "clear-cut", "grams": 50}, {"from": "amber-cut", "grams": 50}]},
+    {"id": "amber-cut", "kind": "feed", "grams": 80},
+    {"id": "side-stream", "kind": "melt", "grams": 15, "loss_g": 0, "inputs": [{"from": "first-melt", "grams": 15}]}
+  ]
+}

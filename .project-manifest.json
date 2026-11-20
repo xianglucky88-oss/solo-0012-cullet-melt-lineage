@@ -1,0 +1,106 @@
+{
+  "project_shape": "backend",
+  "modules": [
+    {
+      "id": "recipe",
+      "path": "cullet/recipe.py",
+      "responsibility": "解析原料和熔次合同"
+    },
+    {
+      "id": "balance",
+      "path": "cullet/balance.py",
+      "responsibility": "校核质量并分配谱系"
+    },
+    {
+      "id": "releases",
+      "path": "cullet/releases.py",
+      "responsibility": "冻结快照并对比父版"
+    },
+    {
+      "id": "__main__",
+      "path": "cullet/__main__.py",
+      "responsibility": "提供文件导入与 JSON 查询入口"
+    }
+  ],
+  "workflows": [
+    {
+      "id": "publish",
+      "name": "发布首版物料图",
+      "entry": "python3 -B -m cullet --db demo.sqlite publish examples/batch.json",
+      "success": "冻结原料及熔次事实",
+      "failure": "过量取料或投入产出不等时拒绝",
+      "verification": "python3 -B examples/smoke.py",
+      "module_ids": [
+        "recipe",
+        "balance",
+        "releases",
+        "__main__"
+      ],
+      "steps": [
+        "执行 publish examples/batch.json",
+        "冻结原料及熔次事实"
+      ]
+    },
+    {
+      "id": "attribute",
+      "name": "展开回炉物料来源",
+      "entry": "python3 -B -m cullet --db demo.sqlite publish examples/batch.json",
+      "success": "两层回炉仍保留各原料质量",
+      "failure": "未知上游或环不得产出事实",
+      "verification": "python3 -B examples/smoke.py",
+      "module_ids": [
+        "recipe",
+        "balance",
+        "releases",
+        "__main__"
+      ],
+      "steps": [
+        "执行 publish examples/batch.json",
+        "两层回炉仍保留各原料质量"
+      ]
+    },
+    {
+      "id": "compare",
+      "name": "对照父版后的物料事实",
+      "entry": "python3 -B -m cullet --db demo.sqlite read amber-trial bench-01",
+      "success": "返回组成和发生变化的物料键",
+      "failure": "未知发布版本时拒绝",
+      "verification": "python3 -B examples/smoke.py",
+      "module_ids": [
+        "__main__",
+        "releases",
+        "recipe"
+      ],
+      "steps": [
+        "执行 read amber-trial bench-01",
+        "返回组成和发生变化的物料键"
+      ]
+    }
+  ],
+  "complexity": {
+    "mechanisms": [
+      {
+        "id": "publish",
+        "workflow_ids": [
+          "publish"
+        ],
+        "behavior": "冻结原料及熔次事实"
+      },
+      {
+        "id": "attribute",
+        "workflow_ids": [
+          "attribute"
+        ],
+        "behavior": "两层回炉仍保留各原料质量"
+      },
+      {
+        "id": "compare",
+        "workflow_ids": [
+          "compare"
+        ],
+        "behavior": "返回组成和发生变化的物料键"
+      }
+    ]
+  },
+  "sample_source": "examples/batch.json"
+}

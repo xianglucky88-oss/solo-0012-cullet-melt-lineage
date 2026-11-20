@@ -1,0 +1,84 @@
+{
+  "version": 2,
+  "task_source_schema_version": 1,
+  "project_domain": "数据工程",
+  "project_subdirection": "数仓与数据湖",
+  "delivery_profile": "local-unadmitted",
+  "baseline_tier": "local-workflow-baseline",
+  "generation_scope": {
+    "mode": "explicit",
+    "basis": "本轮只交付五个本地基线，未生成题库或评定题型容量。"
+  },
+  "production_source": "cullet",
+  "workflow_ids": [
+    "publish",
+    "attribute",
+    "compare"
+  ],
+  "entities": [
+    {
+      "id": "feed",
+      "label": "原料批次"
+    },
+    {
+      "id": "melt",
+      "label": "熔次产物"
+    },
+    {
+      "id": "draw",
+      "label": "取料边"
+    },
+    {
+      "id": "release",
+      "label": "物料快照"
+    }
+  ],
+  "state_machines": [
+    {
+      "subject": "release",
+      "states": [
+        "absent",
+        "published"
+      ],
+      "transitions": [
+        "absent->published",
+        "published->published (replay)"
+      ]
+    }
+  ],
+  "capability_families": [
+    {
+      "family": "将多层混料分解为可核对的原料贡献",
+      "occupied_by": [
+        "publish"
+      ],
+      "available": false
+    }
+  ],
+  "extension_seams": [
+    {
+      "id": "mass-allocation",
+      "anchor": "cullet/balance.py",
+      "entry": "attribute",
+      "distinct_outcome": "将多层混料分解为可核对的原料贡献",
+      "mechanism": "publish"
+    }
+  ],
+  "tension_points": [
+    {
+      "workflow_id": "publish",
+      "description": "冻结原料及熔次事实",
+      "observable_failure": "过量取料或投入产出不等时拒绝"
+    },
+    {
+      "workflow_id": "attribute",
+      "description": "两层回炉仍保留各原料质量",
+      "observable_failure": "未知上游或环不得产出事实"
+    },
+    {
+      "workflow_id": "compare",
+      "description": "返回组成和发生变化的物料键",
+      "observable_failure": "未知发布版本时拒绝"
+    }
+  ]
+}

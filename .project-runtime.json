@@ -1,0 +1,24 @@
+{
+  "language": "Python",
+  "minimum_python": "3.9",
+  "project_shape": "backend",
+  "source_extensions": [
+    ".py"
+  ],
+  "build_command": "python3 -B -c 'from pathlib import Path; [compile(p.read_bytes(), str(p), \"exec\") for d in (\"cullet\", \"examples\") for p in Path(d).glob(\"*.py\")]'",
+  "testing": "deferred",
+  "workflow_checks": [
+    {
+      "workflow_id": "publish",
+      "command": "python3 -B examples/smoke.py"
+    },
+    {
+      "workflow_id": "attribute",
+      "command": "python3 -B examples/smoke.py"
+    },
+    {
+      "workflow_id": "compare",
+      "command": "python3 -B examples/smoke.py"
+    }
+  ]
+}
