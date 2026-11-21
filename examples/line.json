@@ -1,0 +1,64 @@
+{
+  "series": "cullet-line",
+  "revision": "day1",
+  "attestation": "formal",
+  "line": {
+    "vessels": ["V1", "V2"],
+    "handovers": [
+      {"id": "H0", "vessel": "V1", "open": true},
+      {"id": "H1", "vessel": "V1"},
+      {"id": "H2", "vessel": "V1"},
+      {"id": "H3", "vessel": "V1", "open": true},
+      {"id": "H4", "vessel": "V2", "open": true},
+      {"id": "H5", "vessel": "V2", "open": true}
+    ],
+    "shifts": [
+      {
+        "id": "S1", "vessel": "V1",
+        "start": {"handover": "H0", "grams": 100},
+        "end": {"handover": "H1", "grams": 80},
+        "events": [
+          {"type": "feed", "id": "lotA", "grams": 50},
+          {"type": "discharge", "id": "p1", "grams": 40},
+          {"type": "loss", "grams": 10},
+          {"type": "transfer", "id": "t1", "grams": 20},
+          {"type": "changeover"}
+        ]
+      },
+      {
+        "id": "S2", "vessel": "V1",
+        "start": {"handover": "H1", "grams": 80},
+        "end": {"handover": "H2", "min_g": 50, "max_g": 60},
+        "events": [
+          {"type": "feed", "id": "lotC", "grams": 30},
+          {"type": "discharge", "id": "p2", "grams": 50},
+          {"type": "loss", "grams": 5}
+        ]
+      },
+      {
+        "id": "S3", "vessel": "V1",
+        "start": {"handover": "H2", "min_g": 50, "max_g": 60},
+        "end": {"handover": "H3", "grams": 35},
+        "events": [
+          {"type": "feed", "id": "lotD", "grams": 40},
+          {"type": "discharge", "id": "p3", "grams": 35},
+          {"type": "cleanout", "id": "c1", "grams": 60},
+          {"type": "feed", "id": "lotF", "grams": 60},
+          {"type": "discharge", "id": "p4", "grams": 25}
+        ]
+      },
+      {
+        "id": "S4", "vessel": "V2",
+        "start": {"handover": "H4", "grams": 20},
+        "end": {"handover": "H5", "grams": 50},
+        "events": [
+          {"type": "transfer_in", "transfer": "t1"},
+          {"type": "feed", "id": "lotE", "grams": 25},
+          {"type": "discharge", "id": "p5", "grams": 40},
+          {"type": "loss", "grams": 5},
+          {"type": "feed", "id": "lotG", "grams": 30}
+        ]
+      }
+    ]
+  }
+}

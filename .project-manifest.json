@@ -4,22 +4,27 @@
     {
       "id": "recipe",
       "path": "cullet/recipe.py",
-      "responsibility": "解析原料和熔次合同"
+      "responsibility": "解析批式物料图与连续班次线两种合同"
     },
     {
       "id": "balance",
       "path": "cullet/balance.py",
-      "responsibility": "校核质量并分配谱系"
+      "responsibility": "约束批式物料 DAG 并归因"
+    },
+    {
+      "id": "line",
+      "path": "cullet/line.py",
+      "responsibility": "维护连续班次交班台账、罐余质量账、待归来源与版本影响"
     },
     {
       "id": "releases",
       "path": "cullet/releases.py",
-      "responsibility": "冻结快照并对比父版"
+      "responsibility": "冻结两种口径的快照并比较父版"
     },
     {
       "id": "__main__",
       "path": "cullet/__main__.py",
-      "responsibility": "提供文件导入与 JSON 查询入口"
+      "responsibility": "提供文件导入、JSON 查询与期间报告入口"
     }
   ],
   "workflows": [
@@ -75,6 +80,76 @@
         "执行 read amber-trial bench-01",
         "返回组成和发生变化的物料键"
       ]
+    },
+    {
+      "id": "line_publish",
+      "name": "发布连续班次交班台账",
+      "entry": "python3 -B -m cullet --db demo.sqlite publish examples/line.json",
+      "success": "共享交班称量归并为一条台账，有界交接量被质量账钉死",
+      "failure": "重复上报、跨罐占用或质量账不相容时拒绝",
+      "verification": "python3 -B examples/smoke_line.py",
+      "module_ids": [
+        "recipe",
+        "line",
+        "releases",
+        "__main__"
+      ],
+      "steps": [
+        "执行 publish examples/line.json",
+        "归并交班称量并在同一质量账上核对罐余"
+      ]
+    },
+    {
+      "id": "line_attribute",
+      "name": "展开跨班混合的待归与已证来源",
+      "entry": "python3 -B -m cullet --db demo.sqlite read cullet-line day1",
+      "success": "出料按事件顺序充分混合归因，开口残量列为 pending，清空后来源重置",
+      "failure": "formal 下交接量未钉死或班内超取时拒绝",
+      "verification": "python3 -B examples/smoke_line.py",
+      "module_ids": [
+        "recipe",
+        "line",
+        "releases",
+        "__main__"
+      ],
+      "steps": [
+        "执行 read cullet-line day1",
+        "区分已证来源与待归来源并保留精确分数"
+      ]
+    },
+    {
+      "id": "line_report",
+      "name": "合并期间质量报告",
+      "entry": "python3 -B -m cullet --db demo.sqlite report cullet-line day1",
+      "success": "实测出料、已验证回收量与待归量分列，期末余量标明来源状态",
+      "failure": "未知班次或非连续线版本时拒绝",
+      "verification": "python3 -B examples/smoke_line.py",
+      "module_ids": [
+        "line",
+        "releases",
+        "__main__"
+      ],
+      "steps": [
+        "执行 report cullet-line day1",
+        "待归量不计入已验证回收量"
+      ]
+    },
+    {
+      "id": "line_revise",
+      "name": "更正中间班称量并定位影响",
+      "entry": "python3 -B -m cullet --db demo.sqlite read cullet-line day2",
+      "success": "双方共同重确认的更正可发布，输出来源变化、质量不变项与清空截断点",
+      "failure": "单边改动确认交接量或与冻结期末不相容时拒绝",
+      "verification": "python3 -B examples/smoke_line.py",
+      "module_ids": [
+        "line",
+        "releases",
+        "__main__"
+      ],
+      "steps": [
+        "发布共同重确认的完整快照后继版",
+        "读取 impact 并复核旧版事实保持冻结"
+      ]
     }
   ],
   "complexity": {
@@ -99,6 +174,38 @@
           "compare"
         ],
         "behavior": "返回组成和发生变化的物料键"
+      },
+      {
+        "id": "handover-ledger",
+        "workflow_ids": [
+          "line_publish",
+          "line_attribute"
+        ],
+        "behavior": "两班共享一次交班称量，重复上报不增加质量"
+      },
+      {
+        "id": "vessel-mass-account",
+        "workflow_ids": [
+          "line_publish",
+          "line_attribute",
+          "line_report"
+        ],
+        "behavior": "边界区间沿班次链传播并把有界交接量钉为共享确认值"
+      },
+      {
+        "id": "pending-provenance",
+        "workflow_ids": [
+          "line_attribute",
+          "line_report"
+        ],
+        "behavior": "开口残量只证质量不证来源，清空后来源链重置"
+      },
+      {
+        "id": "revision-impact",
+        "workflow_ids": [
+          "line_revise"
+        ],
+        "behavior": "拒绝单边嫁接并定位来源变化、质量不变项与清空截断点"
       }
     ]
   },

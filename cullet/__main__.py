@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 import sqlite3
 
-from .releases import publish, read_release
+from .releases import publish, read_release, report_release
 
 
 def main():
@@ -14,10 +14,16 @@ def main():
     read = commands.add_parser('read')
     read.add_argument('series')
     read.add_argument('revision')
+    report = commands.add_parser('report')
+    report.add_argument('series')
+    report.add_argument('revision')
+    report.add_argument('--shifts', nargs='*', help='limit the period report to these shifts')
     args = parser.parse_args()
     try:
         if args.command == 'publish':
             result = publish(args.db, json.loads(args.source.read_text(encoding='utf-8')))
+        elif args.command == 'report':
+            result = report_release(args.db, args.series, args.revision, args.shifts)
         else:
             result = read_release(args.db, args.series, args.revision)
     except (ValueError, KeyError, TypeError, OSError, sqlite3.Error) as error:

@@ -19,6 +19,22 @@
     {
       "workflow_id": "compare",
       "command": "python3 -B examples/smoke.py"
+    },
+    {
+      "workflow_id": "line_publish",
+      "command": "python3 -B examples/smoke_line.py"
+    },
+    {
+      "workflow_id": "line_attribute",
+      "command": "python3 -B examples/smoke_line.py"
+    },
+    {
+      "workflow_id": "line_report",
+      "command": "python3 -B examples/smoke_line.py"
+    },
+    {
+      "workflow_id": "line_revise",
+      "command": "python3 -B examples/smoke_line.py"
     }
   ]
 }

@@ -1,0 +1,43 @@
+{
+  "series": "cullet-bounded",
+  "revision": "day1",
+  "attestation": "provisional",
+  "line": {
+    "vessels": ["V1"],
+    "handovers": [
+      {"id": "B0", "vessel": "V1", "open": true},
+      {"id": "B1", "vessel": "V1"},
+      {"id": "B2", "vessel": "V1"},
+      {"id": "B3", "vessel": "V1", "open": true}
+    ],
+    "shifts": [
+      {
+        "id": "Q1", "vessel": "V1",
+        "start": {"handover": "B0", "min_g": 40, "max_g": 60},
+        "end": {"handover": "B1", "min_g": 30, "max_g": 50},
+        "events": [
+          {"type": "feed", "id": "bA", "grams": 20},
+          {"type": "discharge", "id": "q1", "grams": 30}
+        ]
+      },
+      {
+        "id": "Q2", "vessel": "V1",
+        "start": {"handover": "B1", "min_g": 30, "max_g": 50},
+        "end": {"handover": "B2", "min_g": 15, "max_g": 25},
+        "events": [
+          {"type": "feed", "id": "bB", "grams": 10},
+          {"type": "discharge", "id": "q2", "grams": 25}
+        ]
+      },
+      {
+        "id": "Q3", "vessel": "V1",
+        "start": {"handover": "B2", "min_g": 15, "max_g": 25},
+        "end": {"handover": "B3", "min_g": 25, "max_g": 35},
+        "events": [
+          {"type": "feed", "id": "bC", "grams": 20},
+          {"type": "discharge", "id": "q3", "grams": 10}
+        ]
+      }
+    ]
+  }
+}

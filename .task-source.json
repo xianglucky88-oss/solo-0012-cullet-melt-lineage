@@ -13,7 +13,11 @@
   "workflow_ids": [
     "publish",
     "attribute",
-    "compare"
+    "compare",
+    "line_publish",
+    "line_attribute",
+    "line_report",
+    "line_revise"
   ],
   "entities": [
     {
@@ -31,6 +35,26 @@
     {
       "id": "release",
       "label": "物料快照"
+    },
+    {
+      "id": "vessel",
+      "label": "连续线罐体"
+    },
+    {
+      "id": "shift",
+      "label": "班次"
+    },
+    {
+      "id": "handover",
+      "label": "交班称量台账行"
+    },
+    {
+      "id": "pending_origin",
+      "label": "待归来源（只证质量）"
+    },
+    {
+      "id": "transfer",
+      "label": "跨罐转出与唯一占用"
     }
   ],
   "state_machines": [
@@ -53,6 +77,16 @@
         "publish"
       ],
       "available": false
+    },
+    {
+      "family": "把连续班次罐余、交班台账与待归来源纳入可审计质量账",
+      "occupied_by": [
+        "line_publish",
+        "line_attribute",
+        "line_report",
+        "line_revise"
+      ],
+      "available": false
     }
   ],
   "extension_seams": [
@@ -62,6 +96,13 @@
       "entry": "attribute",
       "distinct_outcome": "将多层混料分解为可核对的原料贡献",
       "mechanism": "publish"
+    },
+    {
+      "id": "continuous-shift-ledger",
+      "anchor": "cullet/line.py",
+      "entry": "attribute_line",
+      "distinct_outcome": "换班不停炉下把共享交班称量、待归来源与清空截断纳入同一质量账",
+      "mechanism": "handover-ledger"
     }
   ],
   "tension_points": [
@@ -79,6 +120,21 @@
       "workflow_id": "compare",
       "description": "返回组成和发生变化的物料键",
       "observable_failure": "未知发布版本时拒绝"
+    },
+    {
+      "workflow_id": "line_publish",
+      "description": "两班交班称量归并为一条台账且重复上报不增质量",
+      "observable_failure": "第三次报告、跨罐引用或区间无交集时拒绝"
+    },
+    {
+      "workflow_id": "line_attribute",
+      "description": "有界交接量在同一质量账上钉为唯一共享值",
+      "observable_failure": "formal 下未钉死或班内超取时拒绝"
+    },
+    {
+      "workflow_id": "line_revise",
+      "description": "新版期初不得接到不相容的已确认期末",
+      "observable_failure": "单边改动确认交接量时拒绝并要求双方重确认"
     }
   ]
 }
