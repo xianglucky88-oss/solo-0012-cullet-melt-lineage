@@ -1,0 +1,23 @@
+{
+  "kind": "release",
+  "series": "plant-b",
+  "revision": "b2",
+  "parent": "b1",
+  "site": "B",
+  "recipe": "recipe-B-v2",
+  "exchange": {"series": "ab-flow", "revision": "x2"},
+  "materials": [
+    {"id": "b-p1", "kind": "feed", "grams": 98, "item": "P1"},
+    {"id": "b-p2", "kind": "feed", "grams": 96, "item": "P2"},
+    {"id": "b-p3", "kind": "feed", "grams": 40, "item": "P3"},
+    {"id": "b-p1-identified", "kind": "feed", "grams": 10, "item": "P1",
+     "evidence": "D1 follow-up lab match: x1 pending b-unidentified grams resolved to P1; same physical share, no new grams"},
+    {"id": "b-m1", "kind": "melt", "grams": 100, "loss_g": 20,
+     "inputs": [{"from": "b-p1", "grams": 50, "status": "verified"},
+                {"from": "b-p2", "grams": 40, "status": "verified"},
+                {"from": "b-p1-identified", "grams": 10, "status": "verified"},
+                {"from": "b-p3", "grams": 20, "status": "verified"}]},
+    {"id": "b-m2", "kind": "melt", "grams": 17, "loss_g": 3,
+     "inputs": [{"from": "b-p3", "grams": 20, "status": "verified"}]}
+  ]
+}

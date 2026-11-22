@@ -4,22 +4,27 @@
     {
       "id": "recipe",
       "path": "cullet/recipe.py",
-      "responsibility": "解析原料和熔次合同"
+      "responsibility": "解析站点炉次合同与跨厂票据交换合同"
     },
     {
       "id": "balance",
       "path": "cullet/balance.py",
-      "responsibility": "校核质量并分配谱系"
+      "responsibility": "校核质量 DAG、按实物与待归料分别归因"
+    },
+    {
+      "id": "exchange",
+      "path": "cullet/exchange.py",
+      "responsibility": "整组核对多对多票据、退回、双报冲突与跨站成品环"
     },
     {
       "id": "releases",
       "path": "cullet/releases.py",
-      "responsibility": "冻结快照并对比父版"
+      "responsibility": "冻结站点/交换快照、结算并对比父版"
     },
     {
       "id": "__main__",
       "path": "cullet/__main__.py",
-      "responsibility": "提供文件导入与 JSON 查询入口"
+      "responsibility": "提供发布、结算与 JSON 查询入口"
     }
   ],
   "workflows": [
@@ -30,16 +35,8 @@
       "success": "冻结原料及熔次事实",
       "failure": "过量取料或投入产出不等时拒绝",
       "verification": "python3 -B examples/smoke.py",
-      "module_ids": [
-        "recipe",
-        "balance",
-        "releases",
-        "__main__"
-      ],
-      "steps": [
-        "执行 publish examples/batch.json",
-        "冻结原料及熔次事实"
-      ]
+      "module_ids": ["recipe", "balance", "releases", "__main__"],
+      "steps": ["执行 publish examples/batch.json", "冻结原料及熔次事实"]
     },
     {
       "id": "attribute",
@@ -48,16 +45,8 @@
       "success": "两层回炉仍保留各原料质量",
       "failure": "未知上游或环不得产出事实",
       "verification": "python3 -B examples/smoke.py",
-      "module_ids": [
-        "recipe",
-        "balance",
-        "releases",
-        "__main__"
-      ],
-      "steps": [
-        "执行 publish examples/batch.json",
-        "两层回炉仍保留各原料质量"
-      ]
+      "module_ids": ["recipe", "balance", "releases", "__main__"],
+      "steps": ["执行 publish examples/batch.json", "两层回炉仍保留各原料质量"]
     },
     {
       "id": "compare",
@@ -66,40 +55,48 @@
       "success": "返回组成和发生变化的物料键",
       "failure": "未知发布版本时拒绝",
       "verification": "python3 -B examples/smoke.py",
-      "module_ids": [
-        "__main__",
-        "releases",
-        "recipe"
-      ],
-      "steps": [
-        "执行 read amber-trial bench-01",
-        "返回组成和发生变化的物料键"
-      ]
+      "module_ids": ["__main__", "releases", "recipe"],
+      "steps": ["执行 read amber-trial bench-01", "返回组成和发生变化的物料键"]
+    },
+    {
+      "id": "freeze-exchange",
+      "name": "冻结跨厂票据交换契约",
+      "entry": "python3 -B -m cullet --db demo.sqlite publish examples/exchange-x1.json",
+      "success": "实物别名、多对多交割、守恒分装合装与退回入库",
+      "failure": "无签注损耗或合装克数不守恒时拒绝",
+      "verification": "python3 -B examples/smoke_exchange.py",
+      "module_ids": ["recipe", "releases", "__main__"],
+      "steps": ["发布 exchange-x1.json", "校验票据与包事件后冻结"]
+    },
+    {
+      "id": "settle",
+      "name": "两厂同一交割状态互证结算",
+      "entry": "python3 -B -m cullet --db demo.sqlite settle ab-flow x1",
+      "success": "输出已认证申报、待核缺口、退回与待归料余额",
+      "failure": "双报超量、退回已耗用份额或跨站成环时保留冲突",
+      "verification": "python3 -B examples/smoke_exchange.py",
+      "module_ids": ["recipe", "balance", "exchange", "releases", "__main__"],
+      "steps": ["载入两厂指向同一交换的发布", "整组核对票据并生成结算报告"]
+    },
+    {
+      "id": "revise",
+      "name": "磅单更正与配方切换的新版本互证",
+      "entry": "python3 -B -m cullet --db demo.sqlite settle ab-flow x2",
+      "success": "签注损耗转正、待归料核明身份且不重复计、旧版照旧复读",
+      "failure": "未签注缺口继续保留为待核",
+      "verification": "python3 -B examples/smoke_exchange.py",
+      "module_ids": ["recipe", "balance", "exchange", "releases", "__main__"],
+      "steps": ["发布 x2 交换与 a2/b2 站点修订", "重新结算并对照父版"]
     }
   ],
   "complexity": {
     "mechanisms": [
-      {
-        "id": "publish",
-        "workflow_ids": [
-          "publish"
-        ],
-        "behavior": "冻结原料及熔次事实"
-      },
-      {
-        "id": "attribute",
-        "workflow_ids": [
-          "attribute"
-        ],
-        "behavior": "两层回炉仍保留各原料质量"
-      },
-      {
-        "id": "compare",
-        "workflow_ids": [
-          "compare"
-        ],
-        "behavior": "返回组成和发生变化的物料键"
-      }
+      {"id": "publish", "workflow_ids": ["publish"], "behavior": "冻结原料及熔次事实"},
+      {"id": "attribute", "workflow_ids": ["attribute"], "behavior": "两层回炉仍保留各原料质量"},
+      {"id": "compare", "workflow_ids": ["compare"], "behavior": "返回组成和发生变化的物料键"},
+      {"id": "freeze-exchange", "workflow_ids": ["freeze-exchange"], "behavior": "多对多票据与守恒包事件冻结"},
+      {"id": "settle", "workflow_ids": ["settle"], "behavior": "同一交割状态下两厂申报、待核与退回互证"},
+      {"id": "revise", "workflow_ids": ["revise"], "behavior": "更正与配方切换按新版本冻结，旧版不可变"}
     ]
   },
   "sample_source": "examples/batch.json"

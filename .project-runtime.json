@@ -19,6 +19,18 @@
     {
       "workflow_id": "compare",
       "command": "python3 -B examples/smoke.py"
+    },
+    {
+      "workflow_id": "freeze-exchange",
+      "command": "python3 -B examples/smoke_exchange.py"
+    },
+    {
+      "workflow_id": "settle",
+      "command": "python3 -B examples/smoke_exchange.py"
+    },
+    {
+      "workflow_id": "revise",
+      "command": "python3 -B examples/smoke_exchange.py"
     }
   ]
 }

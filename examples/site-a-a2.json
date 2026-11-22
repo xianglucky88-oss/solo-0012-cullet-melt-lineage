@@ -1,0 +1,24 @@
+{
+  "kind": "release",
+  "series": "plant-a",
+  "revision": "a2",
+  "parent": "a1",
+  "site": "A",
+  "recipe": "recipe-A-v2",
+  "exchange": {"series": "ab-flow", "revision": "x2"},
+  "materials": [
+    {"id": "a-p1", "kind": "feed", "grams": 100, "item": "P1"},
+    {"id": "a-p2", "kind": "feed", "grams": 100, "item": "P2"},
+    {"id": "a-p3", "kind": "feed", "grams": 60, "item": "P3"},
+    {"id": "a-returned-p1", "kind": "feed", "grams": 10, "item": "P1"},
+    {"id": "a-returned-p2", "kind": "feed", "grams": 10, "item": "P2"},
+    {"id": "a-b-product", "kind": "feed", "grams": 50,
+     "from_external": {"site": "B", "material": "b-m1"}},
+    {"id": "a-m1", "kind": "melt", "grams": 85, "loss_g": 10,
+     "inputs": [{"from": "a-p1", "grams": 50}, {"from": "a-p2", "grams": 45}]},
+    {"id": "a-m2", "kind": "melt", "grams": 9, "loss_g": 1,
+     "inputs": [{"from": "a-returned-p2", "grams": 10}]},
+    {"id": "a-m3", "kind": "melt", "grams": 28, "loss_g": 2,
+     "inputs": [{"from": "a-p3", "grams": 10}, {"from": "a-b-product", "grams": 20}]}
+  ]
+}

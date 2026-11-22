@@ -1,0 +1,36 @@
+{
+  "kind": "exchange",
+  "series": "ab-flow",
+  "revision": "x1",
+  "items": [
+    {"id": "P1", "aliases": ["a-silica", "b-silica-lot"]},
+    {"id": "P2", "aliases": ["a-soda", "b-soda-lot"]},
+    {"id": "P3", "aliases": ["a-feldspar", "b-feldspar-lot"]}
+  ],
+  "tickets": [
+    {"id": "A-WB-1", "site": "A", "direction": "out", "packing": "bulk",
+     "lines": [{"ref": "a-silica", "grams": 100}, {"ref": "a-soda", "grams": 100}]},
+    {"id": "A-WB-2", "site": "A", "direction": "out", "packing": "bag",
+     "lines": [{"ref": "a-feldspar", "grams": 40}]},
+    {"id": "B-IN-1", "site": "B", "direction": "in", "packing": "combo",
+     "lines": [{"ref": "b-silica-lot", "grams": 98}, {"ref": "b-soda-lot", "grams": 96},
+               {"ref": "b-feldspar-lot", "grams": 40}]}
+  ],
+  "deliveries": [
+    {"id": "D1", "outbound": ["A-WB-1", "A-WB-2"], "inbound": ["B-IN-1"],
+     "retained": [],
+     "confirmed_loss": []}
+  ],
+  "packages": [
+    {"id": "PKG-1", "action": "merge",
+     "inputs": [{"ref": "b-silica-lot", "grams": 60}, {"ref": "b-soda-lot", "grams": 40}],
+     "outputs": [{"ref": "combo-100", "grams": 100}]},
+    {"id": "PKG-2", "action": "split",
+     "inputs": [{"ref": "combo-100", "grams": 50}],
+     "outputs": [{"ref": "combo-half", "grams": 50}]}
+  ],
+  "returns": [
+    {"id": "RT-1", "delivery": "D1", "from": "B", "to": "A",
+     "lines": [{"ref": "b-silica-lot", "grams": 10}, {"ref": "b-soda-lot", "grams": 10}]}
+  ]
+}
