@@ -1,0 +1,35 @@
+{
+  "series": "dust-trial",
+  "revision": "day1",
+  "component": {"id": "sulfur"},
+  "materials": [
+    {"id": "soda", "kind": "feed", "grams": 100},
+    {"id": "sand", "kind": "feed", "grams": 100},
+    {"id": "raw-dust", "kind": "feed", "grams": 5},
+    {"id": "first-melt", "kind": "melt", "grams": 150, "loss_g": 50,
+     "inputs": [{"from": "soda", "grams": 100}, {"from": "sand", "grams": 100}],
+     "limit_ppm": 250},
+    {"id": "second-melt", "kind": "melt", "grams": 60, "loss_g": 0,
+     "inputs": [{"from": "first-melt", "grams": 60}], "limit_ppm": 180},
+    {"id": "third-melt", "kind": "melt", "grams": 60, "loss_g": 0,
+     "inputs": [{"from": "first-melt", "grams": 60}], "limit_ppm": 180},
+    {"id": "fourth-melt", "kind": "melt", "grams": 30, "loss_g": 5,
+     "inputs": [{"from": "second-melt", "grams": 30}, {"from": "raw-dust", "grams": 5}]}
+  ],
+  "samples": [
+    {"id": "s-soda", "of": "soda", "min_ppm": 400, "max_ppm": 600},
+    {"id": "s-sand", "of": "sand", "min_ppm": 0, "max_ppm": 200},
+    {"id": "s-dust", "of": "first-melt", "stream": "loss", "retained": true,
+     "min_ppm": 1000, "max_ppm": 1200}
+  ],
+  "retests": [
+    {"id": "rt-first", "condition": "re-sample settled dust after 24h", "sample": "s-dust",
+     "pending": true}
+  ],
+  "signoffs": [
+    {"melt": "first-melt", "verdict": "released",
+     "note": "soda/sand/dust ranges exclude any breach of 250 ppm"},
+    {"melt": "second-melt", "verdict": "conditional", "retests": ["rt-first"]},
+    {"melt": "third-melt", "verdict": "conditional", "retests": ["rt-first"]}
+  ]
+}

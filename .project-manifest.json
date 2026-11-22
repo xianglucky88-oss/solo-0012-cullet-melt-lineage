@@ -20,6 +20,16 @@
       "id": "__main__",
       "path": "cullet/__main__.py",
       "responsibility": "提供文件导入与 JSON 查询入口"
+    },
+    {
+      "id": "assay",
+      "path": "cullet/assay.py",
+      "responsibility": "提供精确有理数线性规划求成分上下界"
+    },
+    {
+      "id": "component",
+      "path": "cullet/component.py",
+      "responsibility": "建立成分守恒谱系、放行结论与复验影响"
     }
   ],
   "workflows": [
@@ -75,6 +85,62 @@
         "执行 read amber-trial bench-01",
         "返回组成和发生变化的物料键"
       ]
+    },
+    {
+      "id": "assay_publish",
+      "name": "发布带成分化验的炉次",
+      "entry": "python3 -B -m cullet --db demo.sqlite publish examples/assay.json",
+      "success": "冻结逐实物成分上下界、支撑记录与放行状态",
+      "failure": "样品越界、文档代替实测或缺合格依据时拒绝",
+      "verification": "python3 -B examples/smoke_assay.py",
+      "module_ids": [
+        "recipe",
+        "balance",
+        "assay",
+        "component",
+        "releases",
+        "__main__"
+      ],
+      "steps": [
+        "执行 publish examples/assay.json",
+        "冻结逐实物成分上下界、支撑记录与放行状态"
+      ]
+    },
+    {
+      "id": "assay_verdict",
+      "name": "按所有相容解释签放行结论",
+      "entry": "python3 -B -m cullet --db demo.sqlite read dust-trial day1",
+      "success": "给出无条件合格、沿用条件或继续等待及可复核依据",
+      "failure": "仍有超标风险或依赖未合格上游时拒绝签无条件合格",
+      "verification": "python3 -B examples/smoke_assay.py",
+      "module_ids": [
+        "assay",
+        "component",
+        "releases",
+        "__main__"
+      ],
+      "steps": [
+        "执行 read dust-trial day1",
+        "给出放行状态与依据"
+      ]
+    },
+    {
+      "id": "assay_retest",
+      "name": "复验影响两炉时逐批说明可否共用",
+      "entry": "python3 -B -m cullet --db demo.sqlite read dust-trial day2",
+      "success": "逐支线给出上下界、支撑记录与复验前后状态",
+      "failure": "删除或改写冻结证据、追认有条件投料时拒绝",
+      "verification": "python3 -B examples/smoke_assay.py",
+      "module_ids": [
+        "assay",
+        "component",
+        "releases",
+        "__main__"
+      ],
+      "steps": [
+        "执行 read dust-trial day2",
+        "逐支线给出上下界、支撑记录与复验前后状态"
+      ]
     }
   ],
   "complexity": {
@@ -99,6 +165,44 @@
           "compare"
         ],
         "behavior": "返回组成和发生变化的物料键"
+      },
+      {
+        "id": "assay_publish",
+        "workflow_ids": [
+          "assay_publish"
+        ],
+        "behavior": "冻结逐实物成分上下界、支撑记录与放行状态"
+      },
+      {
+        "id": "assay_verdict",
+        "workflow_ids": [
+          "assay_verdict"
+        ],
+        "behavior": "给出无条件合格、沿用条件或继续等待及可复核依据"
+      },
+      {
+        "id": "assay_retest",
+        "workflow_ids": [
+          "assay_retest"
+        ],
+        "behavior": "逐支线给出上下界、支撑记录与复验前后状态"
+      }
+    ],
+    "tension_points": [
+      {
+        "workflow_id": "assay_publish",
+        "description": "玻璃质量平账后仍按实际流向守恒成分",
+        "observable_failure": "文档代替实测、证据删除或复验条件改写时拒绝"
+      },
+      {
+        "workflow_id": "assay_verdict",
+        "description": "覆盖所有相容解释后才签无条件结论",
+        "observable_failure": "仍有超标风险或上游未合格时不得签 released"
+      },
+      {
+        "workflow_id": "assay_retest",
+        "description": "一次上游分相复验影响两条支线",
+        "observable_failure": "未验成前不得共用同一结论，旧版依据保持冻结"
       }
     ]
   },

@@ -19,6 +19,18 @@
     {
       "workflow_id": "compare",
       "command": "python3 -B examples/smoke.py"
+    },
+    {
+      "workflow_id": "assay_publish",
+      "command": "python3 -B examples/smoke_assay.py"
+    },
+    {
+      "workflow_id": "assay_verdict",
+      "command": "python3 -B examples/smoke_assay.py"
+    },
+    {
+      "workflow_id": "assay_retest",
+      "command": "python3 -B examples/smoke_assay.py"
     }
   ]
 }
